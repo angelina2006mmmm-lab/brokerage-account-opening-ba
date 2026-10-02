@@ -1,0 +1,13 @@
+﻿ID,Scenario,Type,Preconditions,Steps,Expected Result,Priority
+TC-001,Создание заявки,Positive,Авторизованный клиент без активной заявки,POST /applications с валидными данными,201; создана DRAFT-заявка; возвращён applicationId,High
+TC-002,Дубликат заявки,Negative,У клиента уже есть активная заявка,Повторный POST /applications,409; код ACTIVE_APPLICATION_EXISTS,High
+TC-003,Сохранение согласий,Positive,Есть DRAFT-заявка,POST /consents со всеми обязательными согласиями,204; согласия сохранены,High
+TC-004,Отправка без согласий,Negative,"Есть DRAFT, обязательные согласия отсутствуют",POST /submit,422; CONSENT_REQUIRED,Critical
+TC-005,Успешная отправка,Positive,DRAFT + валидные данные + согласия,POST /submit,202; статус SUBMITTED/UNDER_REVIEW,Critical
+TC-006,Получение статуса,Positive,Существует заявка,GET /status,200; актуальный статус и updatedAt,High
+TC-007,Чужая заявка,Security,Пользователь запрашивает чужой applicationId,GET /applications/{id},404/403; данные не раскрыты,Critical
+TC-008,Дополнительные данные,Business,Проверка выявила нехватку данных,Обработка заявки,Статус ADDITIONAL_INFO_REQUIRED; показан next step,High
+TC-009,Отказ,Business,Проверка вернула отрицательное решение,Обработка заявки,Статус REJECTED; счёт не создан,Critical
+TC-010,Открытие счёта,Positive,Заявка APPROVED,Создание brokerage account,Статус ACCOUNT_OPENED; accountId сохранён,Critical
+TC-011,Повторный submit после открытия,Negative,ACCOUNT_OPENED,POST /submit,422/409; операция запрещена,High
+TC-012,История статусов,Positive,Заявка прошла несколько этапов,Запрос истории/проверка БД,Все переходы сохранены по времени,Medium

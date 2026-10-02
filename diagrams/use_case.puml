@@ -1,0 +1,24 @@
+@startuml
+left to right direction
+actor "Клиент" as Client
+actor "Сервис проверок" as Check
+actor "Brokerage Core" as Core
+
+rectangle "Brokerage Account Opening" {
+  usecase "Создать заявку" as UC1
+  usecase "Подтвердить согласия" as UC2
+  usecase "Отправить заявку" as UC3
+  usecase "Получить статус" as UC4
+  usecase "Предоставить доп. данные" as UC5
+  usecase "Открыть брокерский счёт" as UC6
+}
+
+Client --> UC1
+Client --> UC2
+Client --> UC3
+Client --> UC4
+Client --> UC5
+UC3 --> Check
+Check --> UC6
+UC6 --> Core
+@enduml

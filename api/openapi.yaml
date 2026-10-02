@@ -1,0 +1,185 @@
+openapi: 3.0.3
+info:
+  title: Brokerage Account Opening API
+  version: 1.0.0
+
+paths:
+  /applications:
+    post:
+      summary: Создать заявку на открытие брокерского счёта
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateApplicationRequest'
+      responses:
+        '201':
+          description: Заявка создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '409':
+          description: Активная заявка уже существует
+
+  /applications/{applicationId}:
+    get:
+      summary: Получить заявку
+      parameters:
+        - in: path
+          name: applicationId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '404':
+          description: Заявка не найдена
+
+  /applications/{applicationId}/consents:
+    post:
+      summary: Сохранить согласия
+      parameters:
+        - in: path
+          name: applicationId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [consents]
+              properties:
+                consents:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Consent'
+      responses:
+        '204':
+          description: Согласия сохранены
+
+  /applications/{applicationId}/submit:
+    post:
+      summary: Отправить заявку
+      parameters:
+        - in: path
+          name: applicationId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '202':
+          description: Заявка принята в обработку
+        '422':
+          description: Ошибка бизнес-валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /applications/{applicationId}/status:
+    get:
+      summary: Получить текущий статус
+      parameters:
+        - in: path
+          name: applicationId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Текущий статус
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  applicationId:
+                    type: string
+                    format: uuid
+                  status:
+                    $ref: '#/components/schemas/ApplicationStatus'
+                  updatedAt:
+                    type: string
+                    format: date-time
+                  message:
+                    type: string
+
+components:
+  schemas:
+    CreateApplicationRequest:
+      type: object
+      required: [customerId, product]
+      properties:
+        customerId:
+          type: string
+          format: uuid
+        product:
+          type: string
+          example: BROKERAGE
+
+    Consent:
+      type: object
+      required: [type, documentVersion, accepted]
+      properties:
+        type:
+          type: string
+          example: BROKERAGE_TERMS
+        documentVersion:
+          type: string
+          example: "1.0"
+        accepted:
+          type: boolean
+
+    ApplicationStatus:
+      type: string
+      enum:
+        - DRAFT
+        - SUBMITTED
+        - UNDER_REVIEW
+        - ADDITIONAL_INFO_REQUIRED
+        - APPROVED
+        - REJECTED
+        - ACCOUNT_OPENED
+
+    Application:
+      type: object
+      properties:
+        applicationId:
+          type: string
+          format: uuid
+        customerId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/ApplicationStatus'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: CONSENT_REQUIRED
+        message:
+          type: string
+          example: Необходимо подтвердить обязательные согласия

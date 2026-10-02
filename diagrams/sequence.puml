@@ -1,0 +1,30 @@
+@startuml
+actor Client
+participant "Mobile App" as App
+participant "Brokerage API" as API
+database DB
+participant "Check Service" as Check
+participant "Brokerage Core" as Core
+
+Client -> App: Открыть брокерский счёт
+App -> API: POST /applications
+API -> DB: create DRAFT
+DB --> API: applicationId
+API --> App: 201 Created
+
+Client -> App: Подтвердить условия и согласия
+App -> API: POST /applications/{id}/consents
+API -> DB: save consents
+API --> App: 204 No Content
+
+Client -> App: Отправить заявку
+App -> API: POST /applications/{id}/submit
+API -> DB: status=SUBMITTED
+API -> Check: run checks
+Check --> API: APPROVED
+API -> Core: create brokerage account
+Core --> API: accountId
+API -> DB: status=ACCOUNT_OPENED
+API --> App: success
+App --> Client: Счёт открыт
+@enduml

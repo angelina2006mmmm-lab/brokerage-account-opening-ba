@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  id="Definitions_Brokerage"
+  targetNamespace="http://example.com/brokerage">
+
+  <bpmn:process id="Process_BrokerageOpening" name="Открытие брокерского счёта" isExecutable="false">
+    <bpmn:startEvent id="StartEvent_1" name="Клиент начинает открытие"/>
+    <bpmn:task id="Task_CheckEligibility" name="Проверить доступность продукта"/>
+    <bpmn:exclusiveGateway id="Gateway_Eligible" name="Доступно?"/>
+    <bpmn:endEvent id="End_NotEligible" name="Показать причину недоступности"/>
+    <bpmn:task id="Task_CreateDraft" name="Создать DRAFT-заявку"/>
+    <bpmn:task id="Task_ReviewTerms" name="Показать условия и данные"/>
+    <bpmn:task id="Task_CollectConsents" name="Получить согласия"/>
+    <bpmn:task id="Task_Submit" name="Отправить заявку"/>
+    <bpmn:task id="Task_Validate" name="Проверить данные"/>
+    <bpmn:exclusiveGateway id="Gateway_Valid" name="Данные корректны?"/>
+    <bpmn:task id="Task_RequestInfo" name="Запросить дополнительные данные"/>
+    <bpmn:task id="Task_Review" name="Провести проверки"/>
+    <bpmn:exclusiveGateway id="Gateway_Approved" name="Одобрено?"/>
+    <bpmn:endEvent id="End_Rejected" name="REJECTED"/>
+    <bpmn:task id="Task_CreateAccount" name="Создать брокерский счёт"/>
+    <bpmn:endEvent id="End_Opened" name="ACCOUNT_OPENED"/>
+
+    <bpmn:sequenceFlow id="F1" sourceRef="StartEvent_1" targetRef="Task_CheckEligibility"/>
+    <bpmn:sequenceFlow id="F2" sourceRef="Task_CheckEligibility" targetRef="Gateway_Eligible"/>
+    <bpmn:sequenceFlow id="F3" name="Нет" sourceRef="Gateway_Eligible" targetRef="End_NotEligible"/>
+    <bpmn:sequenceFlow id="F4" name="Да" sourceRef="Gateway_Eligible" targetRef="Task_CreateDraft"/>
+    <bpmn:sequenceFlow id="F5" sourceRef="Task_CreateDraft" targetRef="Task_ReviewTerms"/>
+    <bpmn:sequenceFlow id="F6" sourceRef="Task_ReviewTerms" targetRef="Task_CollectConsents"/>
+    <bpmn:sequenceFlow id="F7" sourceRef="Task_CollectConsents" targetRef="Task_Submit"/>
+    <bpmn:sequenceFlow id="F8" sourceRef="Task_Submit" targetRef="Task_Validate"/>
+    <bpmn:sequenceFlow id="F9" sourceRef="Task_Validate" targetRef="Gateway_Valid"/>
+    <bpmn:sequenceFlow id="F10" name="Нет" sourceRef="Gateway_Valid" targetRef="Task_RequestInfo"/>
+    <bpmn:sequenceFlow id="F11" sourceRef="Task_RequestInfo" targetRef="Task_ReviewTerms"/>
+    <bpmn:sequenceFlow id="F12" name="Да" sourceRef="Gateway_Valid" targetRef="Task_Review"/>
+    <bpmn:sequenceFlow id="F13" sourceRef="Task_Review" targetRef="Gateway_Approved"/>
+    <bpmn:sequenceFlow id="F14" name="Нет" sourceRef="Gateway_Approved" targetRef="End_Rejected"/>
+    <bpmn:sequenceFlow id="F15" name="Да" sourceRef="Gateway_Approved" targetRef="Task_CreateAccount"/>
+    <bpmn:sequenceFlow id="F16" sourceRef="Task_CreateAccount" targetRef="End_Opened"/>
+  </bpmn:process>
+</bpmn:definitions>
